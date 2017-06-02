@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+{# Load the tag library #}
+{% load bootstrap3 %}
+
+{# Load CSS and JavaScript #}
+{% bootstrap_css %}
+{% bootstrap_javascript %}
+
+{# Display django.contrib.messages as Bootstrap alerts #}
+{% bootstrap_messages %}
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>{% block title %}Lockdown online execution environment{% endblock %}
+    </title>
+  </head>
+  <body>
+    <header>
+      <h1>Lockdown</h1>
+      {% if user.is_authenticated %}
+        <a href="{% url 'user_logout' %}">logout</a>
+      {% else %}
+        <a href="{% url 'user_login' %}">login</a> / <a href="{% url 'signup' %}">signup</a>
+      {% endif %}
+      <hr>
+    </header>
+    <main>
+      {% block content %}
+      {% endblock %}
+    </main>
+  </body>
+</html>
