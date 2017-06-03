@@ -2,6 +2,9 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.forms import UserCreationForm
+from django.views.decorators.csrf import csrf_exempt
+
+import json
 
 from .forms import LoginForm
 
@@ -42,3 +45,20 @@ def user_logout(request):
         return HttpResponse("logged out")
     else:
         return redirect('index')
+
+def playground(request):
+    if not request.user.is_authenticated:
+        return redirect('user_login')
+    else:
+        if request.method == 'GET':
+            return render(request, 'playground.html')
+
+@csrf_exempt
+def runcode(request):
+    if (not request.user.is_authenticated) or request.method == 'GET':
+        return HttpResponse('Unauthorized', status=401)
+    else:
+        print request.POST.viewvalues()
+        received_data = json.loads(request.body)
+        print received_data['code']
+        return HttpResponse('okay')
