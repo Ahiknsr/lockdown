@@ -4,6 +4,7 @@
 
 {% block content %}
 
+<div style="position:absolute;bottom:0;margin-top:20px;" >
     <script>
     function auto_grow(element) {
         lines = element.value.split(/\r|\r\n|\n/);
@@ -22,11 +23,18 @@
     function runcode(){
     console.log('okay');
     code = document.getElementsByName('code')[0].value;
-    input = document.getElementsByName('input')[0].value
+    input = document.getElementsByName('input')[0].value;
+    tmp = document.getElementById("lang");
+    lang= tmp.options[tmp.selectedIndex].value;
     var xmlhttp = new XMLHttpRequest();   // new HttpRequest instance 
+    xmlhttp.onreadystatechange = function() {
+        if (xmlhttp.readyState == XMLHttpRequest.DONE) {
+            document.getElementsByName('output')[0].value = xmlhttp.responseText;
+        }
+    }
     xmlhttp.open("POST", " {% url 'runcode' %} ");
     xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-    xmlhttp.send(JSON.stringify({ code: code, input: input, lang: "c" }));
+    xmlhttp.send(JSON.stringify({ code: code, input: input, lang: lang }));
     }
     </script>
 
@@ -38,37 +46,44 @@
     <form>
     <textarea name="code" cols="70" rows="10" onkeyup="auto_grow(this)"></textarea>
     </form>
+
+    <select id="lang">
+        <option value="c" selected="selected" >c</option>
+        <option value="cpp"  >c++</option>
+    </select>
     <button type="submit" onclick="runcode()">execute</button>
   </form>
 
 </div>
 
 
-<div style="margin-top:20px">
-<div style="width: 40%; height: 50%;  float:left; margin-left:20px ">
+<div style="margin-top:20px;  margin-left:20px;">
+
+<div style="width: 20%; height: 50%;  float:left; margin: 1%; ">
   <form method="post">
     {% csrf_token %}
 
     <form>
-    <textarea name="input" cols="70" rows="5" onkeyup="auto_grow(this)"></textarea>
+    <textarea name="input" cols="40" rows="10" onkeyup="auto_grow(this)"></textarea>
     </form>
     <h2>input</h2>
   </form>
 </div>
 
 
-<div style="width: 50%; height: 50%;  float:right;">
+<div style="width: 20%; height: 50%;  float:right;">
   <form method="post">
     {% csrf_token %}
 
     <form>
-    <textarea name="output" cols="70" rows="5" onkeyup="auto_grow(this)"></textarea>
+    <textarea name="output" cols="40" rows="10" onkeyup="auto_grow(this)"></textarea>
     </form>
     <h2>output</h2>
   </form>
 </div>
 </div>
 
+</div>
 
 {% endblock %}
 
