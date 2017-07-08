@@ -32,8 +32,10 @@ int execute_pyfile();
 int create_user();
 void delete_user(int uid);
 int rand_interval(unsigned int min, unsigned int max);
+void get_running_dir();
 
 unsigned long long int cpu=5,mem=1572864000,file=0,out=500000,proc=1;
+char exe_path[1024];
 
 
 int main(int argc,char *argv[])
@@ -45,6 +47,7 @@ int main(int argc,char *argv[])
         return 0;
     }
     
+    get_running_dir();
     int filetype = get_extension(argv[1]);
     if(filetype<0)
         fprintf(stderr,"unrecognized file\n");
@@ -69,9 +72,21 @@ int main(int argc,char *argv[])
 	exit(0);
 }
 
-void redirect_output()
+void setup_io()
 {
-    //todo
+    int exe_dir = open(exe_path,O_RDONLY);
+    //read stdin from input.txt
+    //write stdout to output.txt
+    close(0);
+    close(1);
+    //close(3);
+    char *infile = "input.txt";
+    char *outfile = "output.txt";
+    int fd0,fd1,fd2;
+    //fd0,fd1,fd2 will be 0,1,2 respectively
+    fd0 = openat(exe_dir,infile, O_RDONLY);
+    fd1 = openat(exe_dir,outfile, O_WRONLY|O_CREAT,S_IROTH|S_IWOTH);
+    //fd2 = openat(exe_dir,outfile, O_WRONLY|O_CREAT,S_IROTH|S_IWOTH);
 }
 
 int get_extension(char *filename)
@@ -238,15 +253,23 @@ static void set_limits(char *name, int resource,unsigned long long int lim)
 int execute_cfile(int filetype)
 {
     //remove previous files
-    system("rm output.txt input >/dev/null 2>&1");
+    system("rm output.txt >/dev/null 2>&1");
+    char cd[1024]= "cd ";
+    strcat(cd,exe_path);
     //compile the source with static flag so that
     //shared libraries are not needed
     if(filetype==1)
     {
-        system("gcc input.c -o input -static >output.txt 2>&1 ");
+        char compile[99] = "&&gcc input.c -o input -static >output.txt 2>&1";
+        strcat(cd,compile);
+        system(cd);
+        //system("gcc input.c -o input -static >output.txt 2>&1 ");
     }
     if(filetype==2)
     {
+        char compile[99] = "&&g++ input.cpp -o input -static >output.txt 2>&1";
+        strcat(cd,compile);
+        system(cd);
         system("g++ input.cpp -o input -static >output.txt 2>&1 ");
     }
 
@@ -264,15 +287,15 @@ int execute_cfile(int filetype)
     }
     if(cpid==0)
     {
+
+        setup_io();
         setup_sandbox(1);
         //execute input using exevp
         //since system(3) will not work due to sandbox
         setgid(tmp_uid);
         setuid(tmp_uid);
-        char *exec_argv[1];
-        exec_argv[0]="in";
-        exec_argv[1]=NULL;
-        //redirect_output();
+        char *exec_argv[0];
+        exec_argv[0]=NULL;
         int ret=execvp("./input",exec_argv);
         exit(ret);
     }
@@ -297,17 +320,16 @@ int execute_pyfile()
     }
     if(cpid==0)
     {
+        setup_io();
         setup_sandbox(0);
         //execute input using exevp
         //since system(3) will not work due to sandbox
         setgid(tmp_uid);
         setuid(tmp_uid);
-        char *exec_argv[3];
+        char *exec_argv[2];
         exec_argv[0]="python2";
         exec_argv[1]="input.py";
-        exec_argv[2]="in";
-        exec_argv[3]=NULL;
-        //redirect_output();
+        exec_argv[2]=NULL;
         int ret=execvp("python2",exec_argv);
         exit(ret);
     }
@@ -361,3 +383,18 @@ int rand_interval(unsigned int min, unsigned int max)
 
     return min + (r / buckets);
 }
+
+//https://stackoverflow.com/a/198099
+void get_running_dir()
+{
+    char tmp[1024];
+    sprintf(tmp, "/proc/%d/exe", getpid());
+    readlink(tmp,exe_path,sizeof(exe_path));
+    char *ext = strrchr(exe_path, '/');
+    *ext='\0';
+    fprintf(stderr,"sandbox is located in %s\n",exe_path);
+    //chdir is needed because of
+    //execvp("./input",exec_argv)
+    chdir(exe_path);
+}
+

@@ -14,7 +14,7 @@ before you run the following commands make sure python2 and pip2 are installed i
 `cd lockdown/server/`  
 `pip2 install -r requirements.txt`  
 `python2 manage.py migrate`  
-`python2 manage.py runserver`  
+`sudo python2 manage.py runserver`  
 
 # Usage
 

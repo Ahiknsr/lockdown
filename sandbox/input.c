@@ -72,6 +72,10 @@ int main(int argc,char *argv[])
     {
         printf("%s\n",argv[i]);
     }
+    int t1;
+    scanf("%d",&t1);
+    printf("read %d\n",t1);
+    printf("read \n");
 
 
 

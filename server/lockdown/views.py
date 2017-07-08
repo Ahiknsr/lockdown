@@ -66,12 +66,12 @@ def runcode(request):
     else:
         received_data = json.loads(request.body)
         maketempdir(request.user.username)
-        createfile('source', received_data['code'], request.user.username, received_data['lang'])
+        createfile('input', received_data['code'], request.user.username, received_data['lang'])
         createfile('input', received_data['input'], request.user.username)
         tmp_user_dir = '/tmp/' + request.user.username + '/sandbox/'
-        source_file = tmp_user_dir + 'source.' + received_data['lang']
-        input_file = tmp_user_dir + 'input.txt'
-        command = tmp_user_dir + './runme.sh ' + source_file + ' ' + input_file
+        source_file =  'input.' + received_data['lang']
+        command = tmp_user_dir + './a.out ' + source_file 
+        print command
         system(command)
         return HttpResponse(readoutput(request.user.username))
 
@@ -89,7 +89,7 @@ def createfile(fname, content, username, ext='txt'):
     f.close()
 
 def readoutput(username):
-    outfile = '/tmp/' + username + '/sandbox/' + 'outfile'
+    outfile = '/tmp/' + username + '/sandbox/' + 'output.txt'
     with  open(outfile,'r') as f:
         return f.read()
     
