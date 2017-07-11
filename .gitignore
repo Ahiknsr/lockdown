@@ -41,6 +41,10 @@ pip-delete-this-directory.txt
 local_settings.py
 *.sqlite3
 outfile
+file1
+file2
+a.out
+
 
 # PyBuilder
 target/
