@@ -4,32 +4,54 @@
 
 {% block content %}
 
-<div style="position:absolute;bottom:0;margin-top:20px;" >
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.27.4/codemirror.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.27.4/codemirror.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.27.4/mode/javascript/javascript.js"></script>
+
+<style type="text/css">
+    .CodeMirror {border-top: 5px ; border-bottom: 5px ; width: 600px;}
+  </style>
+
     <script>
-    function auto_grow(element) {
-        lines = element.value.split(/\r|\r\n|\n/);
-        if (lines.count > 10)
-        {
-            element.rows = lines.count+2;
-        }
-        else
-        {
-            element.rows = 10;
-        }
-    }
+function editor(id)
+{
+    CodeMirror.fromTextArea(id, {
+        height: "350px",
+        matchBrackets: true,
+        continuousScanning: 500,
+        lineNumbers: true
+    });
+}
+
+$(document).ready(function()
+{ 
+
+editor(document.getElementById('code'));
+editor(document.getElementById('input'));
+editor(document.getElementById('output'));
+
+}) 
     </script>
+
+<div  >
 
     <script>
     function runcode(){
     console.log('okay');
-    code = document.getElementsByName('code')[0].value;
-    input = document.getElementsByName('input')[0].value;
+    var editor0 = $('.CodeMirror')[0].CodeMirror;
+    var editor1 = $('.CodeMirror')[1].CodeMirror;
+    var editor2 = $('.CodeMirror')[2].CodeMirror;
+    code = editor0.getValue();
+    //code = document.getElementsByName('code')[0].value;
+    input = editor1.getValue();
+    //input = document.getElementsByName('input')[0].value;
     tmp = document.getElementById("lang");
     lang= tmp.options[tmp.selectedIndex].value;
     var xmlhttp = new XMLHttpRequest();   // new HttpRequest instance 
     xmlhttp.onreadystatechange = function() {
         if (xmlhttp.readyState == XMLHttpRequest.DONE) {
-            document.getElementsByName('output')[0].value = xmlhttp.responseText;
+            //document.getElementsByName('output')[0].value = xmlhttp.responseText;
+            editor2.getDoc().setValue(xmlhttp.responseText);
         }
     }
     xmlhttp.open("POST", " {% url 'runcode' %} ");
@@ -39,12 +61,12 @@
     </script>
 
 
-<div style="width:400px; margin-right:auto; margin-left:auto; border:1px ">
+<div style="position:relative; margin: 100px" >
   <form method="post">
     {% csrf_token %}
 
     <form>
-    <textarea name="code" cols="70" rows="10" onkeyup="auto_grow(this)"></textarea>
+    <textarea name="code" id="code" cols="70" rows="10" ></textarea>
     </form>
 
     <select id="lang">
@@ -58,30 +80,29 @@
 </div>
 
 
-<div style="margin-top:20px;  margin-left:20px;">
+<div style="position:relative; margin: 100px">
 
-<div style="width: 20%; height: 50%;  float:left; margin: 1%; ">
-  <form method="post">
-    {% csrf_token %}
-
-    <form>
-    <textarea name="input" cols="40" rows="10" onkeyup="auto_grow(this)"></textarea>
+    <div >
+    <form method="post">
+        {% csrf_token %}
+        <h2>input</h2>
+        <form>
+        <textarea name="input" id="input" cols="40" rows="10" ></textarea>
+        </form>
     </form>
-    <h2>input</h2>
-  </form>
-</div>
+    </div>
 
 
-<div style="width: 20%; height: 50%;  float:right;">
-  <form method="post">
-    {% csrf_token %}
-
-    <form>
-    <textarea name="output" cols="40" rows="10" onkeyup="auto_grow(this)"></textarea>
+    <div >
+    <form method="post">
+        {% csrf_token %}
+        <h2>output</h2>
+        <form>
+        <textarea name="output" id="output" cols="40" rows="10" ></textarea>
+        </form>
     </form>
-    <h2>output</h2>
-  </form>
-</div>
+    </div>
+
 </div>
 
 </div>

@@ -44,6 +44,8 @@ outfile
 file1
 file2
 a.out
+input.txt
+output.txt
 
 
 # PyBuilder
